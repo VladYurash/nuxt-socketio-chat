@@ -1,97 +1,88 @@
 <template>
-  <v-layout
-    column
-    justify-center
-    align-center
-  >
-    <v-flex
-      xs12
-      sm8
-      md6
-    >
-      <div class="text-center">
-        <logo />
-        <vuetify-logo />
-      </div>
-      <v-card>
-        <v-card-title class="headline">
-          Welcome to the Vuetify + Nuxt.js template
-        </v-card-title>
+  <v-layout column justify-center align-center>
+    <v-flex xs12 sm8>
+      <v-card min-width="500">
+        <v-card-title><h1>Nuxt chat</h1></v-card-title>
         <v-card-text>
-          <p>Vuetify is a progressive Material Design component framework for Vue.js. It was designed to empower developers to create amazing applications.</p>
-          <p>
-            For more information on Vuetify, check out the <a
-              href="https://vuetifyjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              documentation
-            </a>.
-          </p>
-          <p>
-            If you have questions, please join the official <a
-              href="https://chat.vuetifyjs.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="chat"
-            >
-              discord
-            </a>.
-          </p>
-          <p>
-            Find a bug? Report it on the github <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="contribute"
-            >
-              issue board
-            </a>.
-          </p>
-          <p>Thank you for developing with Vuetify and I look forward to bringing more exciting features in the future.</p>
-          <div class="text-xs-right">
-            <em><small>&mdash; John Leider</small></em>
-          </div>
-          <hr class="my-3">
-          <a
-            href="https://nuxtjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <v-form
+            ref="form"
+            v-model="valid"
+            lazy-validation
           >
-            Nuxt Documentation
-          </a>
-          <br>
-          <a
-            href="https://github.com/nuxt/nuxt.js"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt GitHub
-          </a>
+            <v-text-field
+              v-model="name"
+              :counter="16"
+              :rules="nameRules"
+              label="Укажите Ваше имя"
+              required
+            ></v-text-field>
+
+            <v-text-field
+              v-model="room"
+              :rules="roomRules"
+              label="Укажите комнату"
+              required
+            ></v-text-field>
+
+            <v-btn
+              :disabled="!valid"
+              color="primary"
+              class="ma-0"
+              @click="onSubmit"
+            >
+              Войти в чат
+            </v-btn>
+          </v-form>
         </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            nuxt
-            to="/inspire"
-          >
-            Continue
-          </v-btn>
-        </v-card-actions>
       </v-card>
     </v-flex>
   </v-layout>
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
-import VuetifyLogo from '~/components/VuetifyLogo.vue'
+  import { mapMutations } from 'vuex'
 
-export default {
-  components: {
-    Logo,
-    VuetifyLogo
+  export default {
+    head: {
+      title: 'Simple chat'
+    },
+    layout: 'empty',
+    sockets: {
+      connect: function() {
+        console.log("socket connected");
+      }
+    },
+    data: () => ({
+      valid: true,
+      name: '',
+      nameRules: [
+        v => !!v || 'Введите имя',
+        v => (v && v.length <= 10) || 'Имя не должно превышать 16 знаков',
+      ],
+      room: '',
+      roomRules: [
+        v => !!v || 'Введите комнату',
+      ],
+    }),
+
+    methods: {
+      ...mapMutations(['setUser']),
+      onSubmit () {
+        if (!this.$refs.form.validate()) return
+        const user = {
+          name: this.name,
+          room: this.room
+        }
+        this.$socket.emit('userJoined', user, data => {
+          if (typeof data === 'string') {
+            console.error(data)
+          } else {
+            user.id = data.userId
+            this.setUser(user)
+            this.$router.push('/chat')
+          }
+        })
+      },
+    },
   }
-}
 </script>
