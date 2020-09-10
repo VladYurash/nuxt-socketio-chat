@@ -1,6 +1,6 @@
 <template>
   <div class="c-wrap">
-    <div class="c-chat">
+    <div class="c-chat" ref="chat">
       <AppMessage
         v-for="msg in messages"
         :key="msg.text"
@@ -33,6 +33,13 @@
       ChatForm,
     },
     computed: mapState(['user', 'messages']),
+    watch: {
+      messages() {
+        setTimeout(() => {
+          this.$refs.chat.scrollTop = this.$refs.chat.scrollHeight
+        }, 0)
+      }
+    }
   }
 </script>
 

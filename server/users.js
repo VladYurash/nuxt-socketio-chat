@@ -21,7 +21,7 @@ class Users {
     return user
   }
 
-  getbyRoom(room) {
+  getByRoom(room) {
     return this.users.filter(user => user.room === room)
   }
 }
